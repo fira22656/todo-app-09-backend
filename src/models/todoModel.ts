@@ -1,16 +1,25 @@
 import pool from '../config/db';
 
 export const todoModel = {
-  // Ambil semua todo milik user berdasarkan userId
-  getByUserId: async (userId: number) => {
+  // Perbarui getByUserId untuk mendukung pagination
+  getByUserId: async (userId: number, limit: number, offset: number) => {
     const [rows]: any = await pool.query(
-      'SELECT * FROM todos WHERE user_id = ?',
-      [userId]
+      'SELECT * FROM todos WHERE user_id = ? ORDER BY id DESC LIMIT ? OFFSET ?',
+      [userId, limit, offset]
     );
     return rows;
   },
 
-  // Ambil 1 todo berdasarkan id dan userId (Langkah 10a)
+  // Method baru untuk menghitung total todo milik user (untuk pagination)
+  countByUserId: async (userId: number) => {
+    const [rows]: any = await pool.query(
+      'SELECT COUNT(*) AS total FROM todos WHERE user_id = ?',
+      [userId]
+    );
+    return rows[0].total as number;
+  },
+
+  // Ambil 1 todo berdasarkan id dan userId
   getById: async (id: number, userId: number) => {
     const [rows]: any = await pool.query(
       'SELECT * FROM todos WHERE id = ? AND user_id = ?',
